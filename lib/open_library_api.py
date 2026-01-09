@@ -1,58 +1,41 @@
+
 import requests
 import json
 
-
-class Search:
-
-    def get_search_results(self):
-        search_term = "the lord of the rings"
-
-        search_term_formatted = search_term.replace(" ", "+")
-        fields = ["title", "author_name"]
-        # formats the list into a comma separated string
-        # output: "title,author_name"
-        fields_formatted = ",".join(fields)
-        limit = 1
-
-        URL = f"https://openlibrary.org/search.json?title={search_term_formatted}&fields={fields_formatted}&limit={limit}"
-
-        response = requests.get(URL)
-        return response.content
-
-    def get_search_results_json(self):
-        search_term = "the lord of the rings"
-
-        search_term_formatted = search_term.replace(" ", "+")
-        fields = ["title", "author_name"]
-        fields_formatted = ",".join(fields)
-        limit = 1
-
-        URL = f"https://openlibrary.org/search.json?title={search_term_formatted}&fields={fields_formatted}&limit={limit}"
-        print(URL)
-        response = requests.get(URL)
+class BookSearch:
+    def __init__(self):
+        self.base_url = "https://openlibrary.org/search.json"
+    
+    def search_books(self, title, limit=1):
+        """Search for books by title and return JSON data"""
+        params = {
+            'title': title,
+            'fields': 'title,author_name',
+            'limit': limit
+        }
+        
+        response = requests.get(self.base_url, params=params)
         return response.json()
+    
+    def get_book_info(self, title):
+        """Get formatted book information"""
+        data = self.search_books(title)
+        
+        if data['docs']:
+            book = data['docs'][0]
+            title = book.get('title', 'Unknown Title')
+            author = book.get('author_name', ['Unknown Author'])[0]
+            return f"Title: {title}\nAuthor: {author}"
+        else:
+            return "No books found."
 
-    def get_user_search_results(self, search_term):
-        search_term_formatted = search_term.replace(" ", "+")
-        fields = ["title", "author_name"]
-        fields_formatted = ",".join(fields)
-        limit = 1
-
-        URL = f"https://openlibrary.org/search.json?title={search_term_formatted}&fields={fields_formatted}&limit={limit}"
-
-        response = requests.get(URL).json()
-        response_formatted = f"Title: {response['docs'][0]['title']}\nAuthor: {response['docs'][0]['author_name'][0]}"
-        return response_formatted
-
-
-# results = Search().get_search_results()
-# print(results)
-
-# results_json = Search().get_search_results_json()
-# print(json.dumps(results_json, indent=1))
-
-search_term = input("Enter a book title: ")
-result = Search().get_user_search_results(search_term)
-print("Search Result:\n")
-print(result)
+# Example usage
+if __name__ == "__main__":
+    searcher = BookSearch()
+    
+    # Try searching for a book
+    book_title = input("Enter a book title: ")
+    result = searcher.get_book_info(book_title)
+    print("\nSearch Result:")
+    print(result)
 
